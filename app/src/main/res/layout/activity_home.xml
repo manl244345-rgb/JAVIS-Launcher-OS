@@ -55,13 +55,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="100dp"/>
 
-    <androidx.appcompat.widget.SearchView
+    <EditText
         android:id="@+id/search_bar"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="24dp"
         android:background="@drawable/bg_search_bar"
+        android:hint="Search apps or ask JAVIS..."
+        android:hintTextColor="@color/javis_text_secondary"
+        android:textColor="@color/javis_text_primary"
+        android:paddingHorizontal="20dp"
+        android:inputType="text"
+        android:imeOptions="actionSearch"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
