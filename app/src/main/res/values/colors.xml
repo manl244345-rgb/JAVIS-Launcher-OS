@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="javis_bg_dark">#0D0D1A</color>
+    <color name="javis_bg_surface">#1A1A2E</color>
+    <color name="javis_bg_card">#16213E</color>
+    <color name="javis_accent_red">#FF2222</color>
+    <color name="javis_accent_blue">#00AAFF</color>
+    <color name="javis_accent_green">#00FF88</color>
+    <color name="javis_accent_purple">#AA00FF</color>
+    <color name="javis_text_primary">#FFFFFF</color>
+    <color name="javis_text_secondary">#B0B0C0</color>
+    <color name="javis_user_bubble">#1565C0</color>
+    <color name="javis_ai_bubble">#2D1B69</color>
+    <color name="transparent">#00000000</color>
+</resources>
