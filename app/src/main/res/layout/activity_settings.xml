@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/javis_bg_dark">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/javis_bg_surface"
+        app:title="Settings"
+        app:titleTextColor="@color/javis_text_primary"
+        app:navigationIcon="@drawable/ic_arrow_back"/>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:padding="16dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="AI API Key (OpenRouter / Groq / etc.)"
+                android:textColor="@color/javis_text_secondary" android:textSize="13sp" android:layout_marginBottom="4dp"/>
+            <EditText android:id="@+id/et_api_key" android:layout_width="match_parent" android:layout_height="52dp"
+                android:hint="sk-..." android:hintTextColor="@color/javis_text_secondary"
+                android:textColor="@color/javis_text_primary" android:background="@drawable/bg_search_bar"
+                android:paddingHorizontal="16dp" android:inputType="textPassword" android:layout_marginBottom="16dp"/>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Your Name" android:textColor="@color/javis_text_secondary"
+                android:textSize="13sp" android:layout_marginBottom="4dp"/>
+            <EditText android:id="@+id/et_user_name" android:layout_width="match_parent" android:layout_height="52dp"
+                android:hint="Sir" android:hintTextColor="@color/javis_text_secondary"
+                android:textColor="@color/javis_text_primary" android:background="@drawable/bg_search_bar"
+                android:paddingHorizontal="16dp" android:layout_marginBottom="16dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="24dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="Wake Word Detection" android:textColor="@color/javis_text_primary" android:textSize="15sp"/>
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switch_wake_word"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_save"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_margin="16dp"
+        android:text="Save Settings"
+        android:backgroundTint="@color/javis_accent_red"/>
+</LinearLayout>
