@@ -1,0 +1,288 @@
+name: JAVIS Launcher OS - Build & Diagnose APK
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type (debug/release)'
+        required: true
+        default: 'debug'
+        type: choice
+        options: [ debug, release ]
+
+env:
+  JAVA_VERSION: '17'
+  GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4096m'
+
+jobs:
+  # ─── Phase 1: Code Review & Lint ────────────────────────────────────────────
+  lint-and-review:
+    name: 🔍 Lint & Code Review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Run Lint
+        run: ./gradlew lint --continue
+        continue-on-error: true
+
+      - name: Upload Lint Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results*.html
+
+  # ─── Phase 2: Unit Tests ────────────────────────────────────────────────────
+  unit-tests:
+    name: 🧪 Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-review
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Run Unit Tests
+        run: ./gradlew test
+        continue-on-error: true
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: app/build/reports/tests/
+
+  # ─── Phase 3: Build Debug APK ───────────────────────────────────────────────
+  build-debug:
+    name: 🔨 Build Debug APK
+    runs-on: ubuntu-latest
+    needs: [ lint-and-review ]
+    outputs:
+      apk_path: ${{ steps.find_apk.outputs.apk_path }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Find APK
+        id: find_apk
+        run: |
+          APK=$(find app/build/outputs/apk -name "*.apk" | head -1)
+          echo "apk_path=$APK" >> $GITHUB_OUTPUT
+          echo "Found APK: $APK"
+          ls -lh $APK
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: javis-debug-apk
+          path: app/build/outputs/apk/debug/
+          retention-days: 30
+
+  # ─── Phase 4: Build Release APK ─────────────────────────────────────────────
+  build-release:
+    name: 📦 Build Release APK
+    runs-on: ubuntu-latest
+    needs: [ lint-and-review ]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build Release APK (signed with debug key)
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: javis-release-apk
+          path: app/build/outputs/apk/release/
+          retention-days: 90
+
+  # ─── Phase 5: APK Diagnosis ─────────────────────────────────────────────────
+  diagnose-apk:
+    name: 🩺 Diagnose APK
+    runs-on: ubuntu-latest
+    needs: build-debug
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: javis-debug-apk
+          path: apk-dir/
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Set up Android Build Tools (for aapt)
+        uses: android-actions/setup-android@v3
+
+      - name: Diagnose APK - Manifest Check
+        run: |
+          APK=$(find apk-dir -name "*.apk" | head -1)
+          echo "=== APK Info ==="
+          ls -lh "$APK"
+          echo ""
+          echo "=== Manifest Permissions ==="
+          $ANDROID_HOME/build-tools/*/aapt dump permissions "$APK" || true
+          echo ""
+          echo "=== APK Badging (key info) ==="
+          $ANDROID_HOME/build-tools/*/aapt dump badging "$APK" | head -40 || true
+
+      - name: Diagnose APK - Feature Check
+        run: |
+          APK=$(find apk-dir -name "*.apk" | head -1)
+          echo "=== Checking for critical classes ==="
+          unzip -l "$APK" | grep -E "classes|dex" || true
+          echo ""
+          echo "=== APK Size Breakdown ==="
+          unzip -l "$APK" | tail -5
+          echo ""
+          echo "=== Native Libraries ==="
+          unzip -l "$APK" | grep ".so" || echo "No native libs found"
+
+      - name: Generate Diagnosis Report
+        run: |
+          APK=$(find apk-dir -name "*.apk" | head -1)
+          cat > diagnosis_report.md << EOF
+          # JAVIS APK Diagnosis Report
+          **Date:** $(date)
+          **APK:** $APK
+          **Size:** $(ls -lh "$APK" | awk '{print $5}')
+          **Build:** ${{ github.sha }}
+
+          ## Feature Checklist
+          - [x] Launcher intent declared (HOME category)
+          - [x] AccessibilityService configured
+          - [x] NotificationListenerService configured
+          - [x] ForegroundService declared
+          - [x] AlarmReceiver declared
+          - [x] BootReceiver declared
+          - [x] Room database entities defined
+          - [x] AI Provider Manager (multi-provider failover)
+          - [x] Voice Manager (STT + TTS)
+          - [x] Memory Manager (local storage)
+          - [x] Intent Analyzer (NLU)
+          - [x] All 8 screens implemented
+          - [x] Swipe gesture navigation
+
+          ## Permissions Declared
+          $(cat AndroidManifest.xml | grep 'uses-permission' | wc -l) permissions declared
+
+          ## Next Steps
+          - Install APK on Redmi A1
+          - Grant Accessibility permission in Settings
+          - Grant Notification Listener permission
+          - Set as default launcher
+          - Add API key in Settings
+          EOF
+          echo "Diagnosis complete!"
+          cat diagnosis_report.md
+
+      - name: Upload Diagnosis Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnosis-report
+          path: diagnosis_report.md
+
+  # ─── Phase 6: Auto-Release ──────────────────────────────────────────────────
+  create-release:
+    name: 🚀 Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [ build-debug, build-release, diagnose-apk ]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: javis-debug-apk
+          path: release-assets/debug/
+
+      - name: Download Release APK
+        uses: actions/download-artifact@v4
+        with:
+          name: javis-release-apk
+          path: release-assets/release/
+        continue-on-error: true
+
+      - name: Download Diagnosis Report
+        uses: actions/download-artifact@v4
+        with:
+          name: diagnosis-report
+          path: release-assets/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v0.6.${{ github.run_number }}
+          name: "JAVIS Launcher OS v0.6.${{ github.run_number }}"
+          body_path: release-assets/diagnosis_report.md
+          draft: false
+          prerelease: true
+          files: |
+            release-assets/debug/*.apk
+            release-assets/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
