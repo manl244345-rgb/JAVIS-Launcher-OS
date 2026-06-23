@@ -22,16 +22,18 @@
                 android:text="AI API Key (OpenRouter / Groq / etc.)"
                 android:textColor="@color/javis_text_secondary" android:textSize="13sp" android:layout_marginBottom="4dp"/>
             <EditText android:id="@+id/et_api_key" android:layout_width="match_parent" android:layout_height="52dp"
-                android:hint="sk-..." android:hintTextColor="@color/javis_text_secondary"
-                android:textColor="@color/javis_text_primary" android:background="@drawable/bg_search_bar"
+                android:hint="sk-..." android:textColor="@color/javis_text_primary"
+                android:textColorHint="@color/javis_text_secondary"
+                android:background="@drawable/bg_search_bar"
                 android:paddingHorizontal="16dp" android:inputType="textPassword" android:layout_marginBottom="16dp"/>
 
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Your Name" android:textColor="@color/javis_text_secondary"
                 android:textSize="13sp" android:layout_marginBottom="4dp"/>
             <EditText android:id="@+id/et_user_name" android:layout_width="match_parent" android:layout_height="52dp"
-                android:hint="Sir" android:hintTextColor="@color/javis_text_secondary"
-                android:textColor="@color/javis_text_primary" android:background="@drawable/bg_search_bar"
+                android:hint="Sir" android:textColor="@color/javis_text_primary"
+                android:textColorHint="@color/javis_text_secondary"
+                android:background="@drawable/bg_search_bar"
                 android:paddingHorizontal="16dp" android:layout_marginBottom="16dp"/>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
