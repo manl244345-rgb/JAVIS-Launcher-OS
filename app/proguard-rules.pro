@@ -1,0 +1,7 @@
+-keep class com.javis.launcher.database.entities.** { *; }
+-keep class com.javis.launcher.models.** { *; }
+-keepattributes *Annotation*
+-keepclassmembers class * extends androidx.room.RoomDatabase { *; }
+-dontwarn org.slf4j.**
+-keep class retrofit2.** { *; }
+-keepclasseswithmembers class * { @retrofit2.http.* <methods>; }
