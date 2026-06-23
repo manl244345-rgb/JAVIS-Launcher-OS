@@ -49,6 +49,18 @@
         android:hardwareAccelerated="true"
         tools:targetApi="31">
 
+        <!-- Remove WorkManager default initializer to avoid conflict -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <!-- Main Launcher Activity -->
         <activity
             android:name=".ui.home.HomeActivity"
@@ -141,11 +153,6 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-
-        <!-- Background Worker (via WorkManager) -->
-        <service
-            android:name=".services.JavisBackgroundWorker"
-            android:exported="false" />
 
         <!-- Boot Receiver -->
         <receiver
