@@ -1,34 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/javis_bg_dark">
-
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/javis_bg_dark">
+    <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
         android:background="@color/javis_bg_surface"
-        app:title="Mission Control"
-        app:titleTextColor="@color/javis_text_primary"
         app:navigationIcon="@drawable/ic_arrow_back"/>
-
-    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:padding="16dp">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-            <TextView android:id="@+id/tv_ai_provider" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:textColor="@color/javis_accent_blue" android:textSize="16sp" android:padding="12dp"
-                android:background="@drawable/bg_card" android:layout_marginBottom="8dp" android:text="AI: Loading..."/>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:padding="16dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gap="12dp">
+            <TextView android:id="@+id/tv_provider" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="AI: Loading…" android:textColor="@color/javis_accent_blue" android:textSize="16sp"
+                android:background="@drawable/bg_card" android:padding="16dp"/>
+            <TextView android:id="@+id/tv_voice" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Voice: Loading…" android:textColor="@color/javis_text_primary" android:textSize="15sp"
+                android:background="@drawable/bg_card" android:padding="16dp" android:layout_marginTop="8dp"/>
             <TextView android:id="@+id/tv_battery" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:textColor="@color/javis_accent_green" android:textSize="16sp" android:padding="12dp"
-                android:background="@drawable/bg_card" android:layout_marginBottom="8dp" android:text="Battery: Loading..."/>
-            <TextView android:id="@+id/tv_memory_usage" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:textColor="@color/javis_text_primary" android:textSize="16sp" android:padding="12dp"
-                android:background="@drawable/bg_card" android:layout_marginBottom="8dp" android:text="RAM: Loading..."/>
+                android:text="Battery: Loading…" android:textColor="@color/javis_accent_green" android:textSize="15sp"
+                android:background="@drawable/bg_card" android:padding="16dp" android:layout_marginTop="8dp"/>
             <TextView android:id="@+id/tv_notifications" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:textColor="@color/javis_text_secondary" android:textSize="14sp" android:padding="12dp"
-                android:background="@drawable/bg_card" android:layout_marginBottom="8dp" android:text="Notifications: Loading..."/>
+                android:text="Notifications: Loading…" android:textColor="@color/javis_text_primary" android:textSize="15sp"
+                android:background="@drawable/bg_card" android:padding="16dp" android:layout_marginTop="8dp"/>
+            <TextView android:id="@+id/tv_memory" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Memory: Loading…" android:textColor="@color/javis_text_primary" android:textSize="15sp"
+                android:background="@drawable/bg_card" android:padding="16dp" android:layout_marginTop="8dp"/>
+            <TextView android:id="@+id/tv_alarms" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Alarms: Loading…" android:textColor="@color/javis_text_primary" android:textSize="15sp"
+                android:background="@drawable/bg_card" android:padding="16dp" android:layout_marginTop="8dp"/>
         </LinearLayout>
     </ScrollView>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:padding="16dp" android:gap="12dp">
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_refresh"
+            android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"
+            android:text="Refresh" app:backgroundTint="@color/javis_bg_surface"
+            app:strokeColor="@color/javis_accent_red" app:strokeWidth="1dp"/>
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_chat"
+            android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"
+            android:text="Chat" app:backgroundTint="@color/javis_accent_red"/>
+    </LinearLayout>
 </LinearLayout>

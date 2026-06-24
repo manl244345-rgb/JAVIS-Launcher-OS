@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/javis_bg_dark">
-
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/javis_bg_dark">
+    <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
         android:background="@color/javis_bg_surface"
-        app:title="JAVIS Memory"
-        app:titleTextColor="@color/javis_text_primary"
         app:navigationIcon="@drawable/ic_arrow_back"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_memory"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"
-        android:clipToPadding="false"/>
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_memory"
+        android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:padding="8dp" android:clipToPadding="false"/>
+    <com.google.android.material.button.MaterialButton android:id="@+id/btn_clear_memory"
+        android:layout_width="match_parent" android:layout_height="48dp"
+        android:layout_margin="16dp" android:text="Clear All Memory"
+        app:backgroundTint="@color/javis_accent_red"/>
 </LinearLayout>

@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="javis_bg_dark">#0D0D1A</color>
-    <color name="javis_bg_surface">#1A1A2E</color>
-    <color name="javis_bg_card">#16213E</color>
-    <color name="javis_accent_red">#FF2222</color>
-    <color name="javis_accent_blue">#00AAFF</color>
-    <color name="javis_accent_green">#00FF88</color>
-    <color name="javis_accent_purple">#AA00FF</color>
-    <color name="javis_text_primary">#FFFFFF</color>
-    <color name="javis_text_secondary">#B0B0C0</color>
-    <color name="javis_user_bubble">#1565C0</color>
-    <color name="javis_ai_bubble">#2D1B69</color>
+    <color name="javis_bg_surface">#12122A</color>
+    <color name="javis_bg_card">#1A1A30</color>
+    <color name="javis_accent_red">#CC0000</color>
+    <color name="javis_accent_red_bright">#FF2200</color>
+    <color name="javis_accent_blue">#0088CC</color>
+    <color name="javis_accent_green">#00CC44</color>
+    <color name="javis_accent_gold">#FFB300</color>
+    <color name="javis_text_primary">#EEEEFF</color>
+    <color name="javis_text_secondary">#8888AA</color>
+    <color name="javis_text_dim">#444466</color>
+    <color name="javis_divider">#22223A</color>
     <color name="transparent">#00000000</color>
+    <color name="semi_transparent_dark">#99000000</color>
+    <color name="chat_user_bubble">#1A0A0A</color>
+    <color name="chat_ai_bubble">#0A0A1A</color>
 </resources>

@@ -11,9 +11,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.javis.launcher.JavisApplication
 import com.javis.launcher.R
-import com.javis.launcher.database.entities.CommandHistoryEntity
+import com.javis.launcher.database.entities.CommandLogEntity
 import com.javis.launcher.databinding.ActivityCommandLogBinding
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -25,36 +24,36 @@ class CommandLogActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCommandLogBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Command Log"
         val adapter = LogAdapter()
-        binding.rvLogs.apply {
-            layoutManager = LinearLayoutManager(this@CommandLogActivity)
-            this.adapter = adapter
-        }
+        binding.rvLog.layoutManager = LinearLayoutManager(this)
+        binding.rvLog.adapter = adapter
         lifecycleScope.launch {
-            JavisApplication.instance.database.commandHistoryDao().getRecent(100).collectLatest {
-                adapter.submitList(it)
-            }
+            JavisApplication.instance.database.commandLogDao().getRecent().collect { adapter.submitList(it) }
         }
     }
 
-    class LogAdapter : ListAdapter<CommandHistoryEntity, LogAdapter.VH>(Diff()) {
-        inner class VH(view: View) : RecyclerView.ViewHolder(view) {
-            val tvCmd: TextView = view.findViewById(R.id.tv_command)
-            val tvTime: TextView = view.findViewById(R.id.tv_time)
-            val tvResult: TextView = view.findViewById(R.id.tv_result)
-        }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-            VH(LayoutInflater.from(parent.context).inflate(R.layout.item_command_log, parent, false))
-        override fun onBindViewHolder(holder: VH, pos: Int) {
-            val item = getItem(pos)
-            holder.tvCmd.text = item.command
-            holder.tvTime.text = SimpleDateFormat("MMM dd HH:mm", Locale.getDefault()).format(Date(item.timestamp))
-            holder.tvResult.text = if (item.success) "✓" else "✗"
-        }
-        class Diff : DiffUtil.ItemCallback<CommandHistoryEntity>() {
-            override fun areItemsTheSame(a: CommandHistoryEntity, b: CommandHistoryEntity) = a.id == b.id
-            override fun areContentsTheSame(a: CommandHistoryEntity, b: CommandHistoryEntity) = a == b
+    override fun onSupportNavigateUp(): Boolean { onBackPressedDispatcher.onBackPressed(); return true }
+}
+
+class LogAdapter : ListAdapter<CommandLogEntity, LogAdapter.VH>(object : DiffUtil.ItemCallback<CommandLogEntity>() {
+    override fun areItemsTheSame(a: CommandLogEntity, b: CommandLogEntity) = a.id == b.id
+    override fun areContentsTheSame(a: CommandLogEntity, b: CommandLogEntity) = a == b
+}) {
+    private val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    override fun onCreateViewHolder(p: ViewGroup, t: Int) = VH(LayoutInflater.from(p.context).inflate(R.layout.item_log, p, false))
+    override fun onBindViewHolder(h: VH, pos: Int) = h.bind(getItem(pos))
+    inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+        private val tvCmd: TextView = v.findViewById(R.id.tv_command)
+        private val tvResult: TextView = v.findViewById(R.id.tv_result)
+        private val tvTime: TextView = v.findViewById(R.id.tv_time)
+        fun bind(e: CommandLogEntity) {
+            tvCmd.text = "[${e.intentType}] ${e.command}"
+            tvResult.text = e.result
+            tvTime.text = sdf.format(Date(e.timestamp))
+            tvResult.setTextColor(if (e.success) 0xFF00CC44.toInt() else 0xFFCC2200.toInt())
         }
     }
 }

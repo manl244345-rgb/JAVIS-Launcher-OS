@@ -2,22 +2,28 @@
 <resources>
     <style name="Theme.Javis" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/javis_accent_red</item>
-        <item name="colorPrimaryVariant">@color/javis_accent_red</item>
+        <item name="colorPrimaryVariant">@color/javis_accent_red_bright</item>
         <item name="colorOnPrimary">@color/javis_text_primary</item>
-        <item name="colorSecondary">@color/javis_accent_blue</item>
         <item name="colorSurface">@color/javis_bg_surface</item>
-        <item name="android:colorBackground">@color/javis_bg_dark</item>
-        <item name="android:textColorPrimary">@color/javis_text_primary</item>
-        <item name="android:textColorSecondary">@color/javis_text_secondary</item>
         <item name="android:windowBackground">@color/javis_bg_dark</item>
         <item name="android:statusBarColor">@color/javis_bg_dark</item>
         <item name="android:navigationBarColor">@color/javis_bg_dark</item>
+        <item name="android:textColorPrimary">@color/javis_text_primary</item>
+        <item name="android:textColorSecondary">@color/javis_text_secondary</item>
+        <item name="toolbarStyle">@style/Widget.Javis.Toolbar</item>
     </style>
     <style name="Theme.Javis.Launcher" parent="Theme.Javis">
-        <item name="android:windowShowWallpaper">false</item>
-        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
     </style>
-    <style name="Theme.Javis.Dark" parent="Theme.Javis">
-        <item name="android:windowBackground">@color/javis_bg_dark</item>
+    <style name="Theme.Javis.Dark" parent="Theme.Javis"/>
+    <style name="Theme.Javis.Alarm" parent="Theme.Javis">
+        <item name="android:windowShowWhenLocked">true</item>
+        <item name="android:windowTurnScreenOn">true</item>
+    </style>
+    <style name="Widget.Javis.Toolbar" parent="Widget.MaterialComponents.Toolbar">
+        <item name="android:background">@color/javis_bg_surface</item>
+        <item name="titleTextColor">@color/javis_text_primary</item>
     </style>
 </resources>

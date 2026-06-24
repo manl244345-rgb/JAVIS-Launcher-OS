@@ -4,67 +4,52 @@ import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.javis.launcher.JavisApplication
-import com.javis.launcher.database.entities.NotificationHistoryEntity
+import com.javis.launcher.database.entities.NotificationCacheEntity
+import com.javis.launcher.models.NotificationItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class JavisNotificationListener : NotificationListenerService() {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _notificationMap = MutableStateFlow<Map<String, List<StatusBarNotification>>>(emptyMap())
+    private val scope = CoroutineScope(Dispatchers.IO)
 
-    companion object {
-        val notificationMap: MutableStateFlow<Map<String, MutableList<String>>> = MutableStateFlow(emptyMap())
-
-        fun getSummary(): String {
-            val map = notificationMap.value
-            if (map.isEmpty()) return "No new notifications"
-            val sb = StringBuilder("You have:\n")
-            map.forEach { (app, msgs) ->
-                sb.append("• ${msgs.size} ${if (msgs.size == 1) "notification" else "notifications"} from $app\n")
-            }
-            return sb.toString().trim()
-        }
-
-        fun clearAll() { notificationMap.value = emptyMap() }
-    }
-
-    override fun onNotificationPosted(sbn: StatusBarNotification) {
-        val pkg = sbn.packageName
-        val pm = applicationContext.packageManager
-        val appName = try { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }
-                      catch (e: Exception) { pkg }
-        val text = sbn.notification.extras.getCharSequence("android.text")?.toString() ?: ""
-        val title = sbn.notification.extras.getCharSequence("android.title")?.toString() ?: ""
-        val content = if (text.isNotBlank()) "$title: $text" else title
-
-        val current = notificationMap.value.toMutableMap()
-        val list = current.getOrDefault(appName, mutableListOf())
-        (list as? MutableList)?.add(content) ?: run { current[appName] = mutableListOf(content) }
-        current[appName] = (current[appName] as? MutableList ?: mutableListOf(content))
-        notificationMap.value = current
-
+    override fun onNotificationPosted(sbn: StatusBarNotification?) {
+        sbn ?: return
+        val extras = sbn.notification.extras
+        val title = extras.getString("android.title") ?: return
+        val text = extras.getString("android.text") ?: ""
+        val appName = try { packageManager.getApplicationLabel(
+            packageManager.getApplicationInfo(sbn.packageName, 0)).toString()
+        } catch (e: Exception) { sbn.packageName }
+        val item = NotificationItem(sbn.packageName, appName, title, text, sbn.postTime)
+        notifications[sbn.packageName] = (notifications[sbn.packageName] ?: mutableListOf()).also { it.add(item) }
         scope.launch {
             try {
-                val app = JavisApplication.instance
-                app.database.notificationHistoryDao().insert(
-                    NotificationHistoryEntity(packageName = pkg, appName = appName, title = title, text = text)
+                JavisApplication.instance.database.notificationCacheDao().insert(
+                    NotificationCacheEntity(packageName = sbn.packageName, appName = appName, title = title, content = text, timestamp = sbn.postTime)
                 )
             } catch (_: Exception) {}
         }
     }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification) {
-        val pm = applicationContext.packageManager
-        val appName = try { pm.getApplicationLabel(pm.getApplicationInfo(sbn.packageName, 0)).toString() }
-                      catch (e: Exception) { sbn.packageName }
-        val current = notificationMap.value.toMutableMap()
-        current.remove(appName)
-        notificationMap.value = current
+    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
+        sbn ?: return
+    }
+
+    companion object {
+        private val notifications = mutableMapOf<String, MutableList<NotificationItem>>()
+
+        fun getAllNotifications(): List<NotificationItem> = notifications.values.flatten().sortedByDescending { it.timestamp }.take(50)
+
+        fun getSummary(): String {
+            val all = getAllNotifications()
+            if (all.isEmpty()) return "No new notifications, Sir."
+            val grouped = all.groupBy { it.appName }
+            return "You have ${all.size} notifications from ${grouped.size} apps: " +
+                grouped.entries.take(5).joinToString(", ") { "${it.value.size} from ${it.key}" } + "."
+        }
+
+        fun clearAll() = notifications.clear()
     }
 }

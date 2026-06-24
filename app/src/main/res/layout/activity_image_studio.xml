@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/javis_bg_dark">
+    <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        android:background="@color/javis_bg_surface"
+        app:navigationIcon="@drawable/ic_arrow_back"/>
+    <ImageView android:id="@+id/iv_preview"
+        android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:scaleType="fitCenter" android:background="@color/javis_bg_surface"
+        android:contentDescription="Image Preview"/>
+    <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="8dp">
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gap="8dp">
+            <com.google.android.material.button.MaterialButton android:id="@+id/btn_pick_image"
+                android:layout_width="wrap_content" android:layout_height="44dp" android:text="Pick"
+                app:backgroundTint="@color/javis_accent_blue"/>
+            <com.google.android.material.button.MaterialButton android:id="@+id/btn_grayscale"
+                android:layout_width="wrap_content" android:layout_height="44dp" android:text="Grayscale"
+                app:backgroundTint="@color/javis_bg_surface" app:strokeColor="@color/javis_accent_red" app:strokeWidth="1dp"/>
+            <com.google.android.material.button.MaterialButton android:id="@+id/btn_brightness"
+                android:layout_width="wrap_content" android:layout_height="44dp" android:text="Brighten"
+                app:backgroundTint="@color/javis_bg_surface" app:strokeColor="@color/javis_accent_red" app:strokeWidth="1dp"/>
+            <com.google.android.material.button.MaterialButton android:id="@+id/btn_contrast"
+                android:layout_width="wrap_content" android:layout_height="44dp" android:text="Contrast"
+                app:backgroundTint="@color/javis_bg_surface" app:strokeColor="@color/javis_accent_red" app:strokeWidth="1dp"/>
+            <com.google.android.material.button.MaterialButton android:id="@+id/btn_save"
+                android:layout_width="wrap_content" android:layout_height="44dp" android:text="Save"
+                app:backgroundTint="@color/javis_accent_red"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+</LinearLayout>

@@ -2,6 +2,9 @@
 <resources>
     <string name="app_name">JAVIS</string>
     <string name="accessibility_service_label">JAVIS Accessibility</string>
-    <string name="notification_listener_label">JAVIS Notifications</string>
-    <string name="javis_description">JAVIS Launcher OS - AI Companion</string>
+    <string name="notification_listener_label">JAVIS Notification Access</string>
+    <string name="tap_to_speak">Tap orb to speak</string>
+    <string name="listening">Listening…</string>
+    <string name="thinking">Thinking…</string>
+    <string name="speaking">Speaking…</string>
 </resources>

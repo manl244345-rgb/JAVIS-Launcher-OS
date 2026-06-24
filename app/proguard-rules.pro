@@ -1,7 +1,11 @@
--keep class com.javis.launcher.database.entities.** { *; }
--keep class com.javis.launcher.models.** { *; }
+-keep class com.javis.launcher.** { *; }
 -keepattributes *Annotation*
--keepclassmembers class * extends androidx.room.RoomDatabase { *; }
--dontwarn org.slf4j.**
--keep class retrofit2.** { *; }
--keepclasseswithmembers class * { @retrofit2.http.* <methods>; }
+-keepattributes SourceFile,LineNumberTable
+-keep public class * extends android.app.Activity
+-keep public class * extends android.app.Service
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends androidx.room.RoomDatabase
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao interface * { *; }
+-dontwarn okhttp3.**
+-dontwarn okio.**

@@ -5,90 +5,78 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.ContactsContract
-import android.telecom.TelecomManager
-import com.javis.launcher.JavisApplication
 import com.javis.launcher.models.AppInfo
 import com.javis.launcher.models.ContactInfo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.javis.launcher.models.LaunchResult
 
 object AppLauncher {
 
-    suspend fun findAndLaunchApp(context: Context, appName: String): LaunchResult = withContext(Dispatchers.IO) {
+    fun getAllApps(context: Context): List<AppInfo> {
         val pm = context.packageManager
-        val searchName = appName.lowercase().trim()
-        val allApps = pm.getInstalledPackages(0)
-        val found = allApps.firstOrNull { pkg ->
-            val label = pm.getApplicationLabel(pkg.applicationInfo).toString().lowercase()
-            label.contains(searchName) || searchName.contains(label.split(" ").first())
-        }
-        if (found != null) {
-            val intent = pm.getLaunchIntentForPackage(found.packageName)
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                withContext(Dispatchers.Main) { context.startActivity(intent) }
-                val db = JavisApplication.instance.database
-                db.installedAppDao().incrementLaunchCount(found.packageName)
-                LaunchResult.Success(pm.getApplicationLabel(found.applicationInfo).toString())
-            } else {
-                LaunchResult.NotLaunchable(appName)
-            }
-        } else {
-            LaunchResult.NotFound(appName)
-        }
-    }
-
-    suspend fun getInstalledApps(context: Context): List<AppInfo> = withContext(Dispatchers.IO) {
-        val pm = context.packageManager
-        val mainIntent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
-        pm.queryIntentActivities(mainIntent, 0)
+        val intent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
+        return pm.queryIntentActivities(intent, 0)
             .filter { it.activityInfo.packageName != context.packageName }
             .map { ri ->
                 AppInfo(
                     packageName = ri.activityInfo.packageName,
                     appName = ri.loadLabel(pm).toString(),
-                    isSystemApp = (ri.activityInfo.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+                    icon = ri.loadIcon(pm)
                 )
             }
             .sortedBy { it.appName }
     }
 
-    suspend fun searchContacts(context: Context, query: String): List<ContactInfo> = withContext(Dispatchers.IO) {
-        val contacts = mutableListOf<ContactInfo>()
+    fun findAndLaunchApp(context: Context, query: String): LaunchResult {
+        val apps = getAllApps(context)
+        val lower = query.lowercase().trim()
+        val exact = apps.find { it.appName.lowercase() == lower }
+        val starts = apps.find { it.appName.lowercase().startsWith(lower) }
+        val contains = apps.find { it.appName.lowercase().contains(lower) }
+        val match = exact ?: starts ?: contains ?: return LaunchResult.NotFound(query)
+        return try {
+            val intent = context.packageManager.getLaunchIntentForPackage(match.packageName)
+                ?: return LaunchResult.NotLaunchable(match.appName)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+            LaunchResult.Success(match.appName)
+        } catch (e: Exception) { LaunchResult.NotLaunchable(match.appName) }
+    }
+
+    fun searchContacts(context: Context, query: String): List<ContactInfo> {
+        val results = mutableListOf<ContactInfo>()
+        val lower = query.lowercase()
         val cursor = context.contentResolver.query(
             ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
             arrayOf(
                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
                 ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                ContactsContract.CommonDataKinds.Phone.NUMBER
+                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.CommonDataKinds.Phone.PHOTO_URI
             ),
             "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME} LIKE ?",
             arrayOf("%$query%"), null
-        )
-        cursor?.use {
+        ) ?: return results
+        cursor.use {
             while (it.moveToNext()) {
-                contacts.add(ContactInfo(
-                    id = it.getString(0) ?: "",
-                    name = it.getString(1) ?: "",
-                    phone = it.getString(2) ?: ""
-                ))
+                val id = it.getString(0) ?: continue
+                val name = it.getString(1) ?: continue
+                val phone = it.getString(2) ?: continue
+                val photo = it.getString(3)
+                if (results.none { r -> r.id == id })
+                    results.add(ContactInfo(id, name, phone, photo))
             }
         }
-        contacts.distinctBy { it.id }
+        return results.filter { it.name.lowercase().contains(lower) }
     }
 
-    fun callContact(context: Context, phone: String): Boolean {
-        return try {
-            val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phone"))
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) { false }
+    fun callContact(context: Context, phone: String) {
+        val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:${phone.replace(" ", "")}"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
     }
-}
 
-sealed class LaunchResult {
-    data class Success(val appName: String) : LaunchResult()
-    data class NotFound(val query: String) : LaunchResult()
-    data class NotLaunchable(val appName: String) : LaunchResult()
+    fun openSettings(context: Context) {
+        val i = Intent(android.provider.Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(i)
+    }
 }

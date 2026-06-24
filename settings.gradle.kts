@@ -13,5 +13,5 @@ dependencyResolutionManagement {
         maven { url = uri("https://jitpack.io") }
     }
 }
-rootProject.name = "JAVISLauncherOS"
+rootProject.name = "JAVIS-Launcher-V06"
 include(":app")

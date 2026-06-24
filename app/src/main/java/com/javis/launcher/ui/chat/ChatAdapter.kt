@@ -6,31 +6,37 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.javis.launcher.R
-import com.javis.launcher.models.ChatMessage
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
-class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.VH>(Diff()) {
-    inner class VH(val root: View) : RecyclerView.ViewHolder(root) {
-        val tvMessage: TextView = root.findViewById(R.id.tv_message)
-        val tvTime: TextView = root.findViewById(R.id.tv_time)
+class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.ViewHolder>(DIFF) {
+
+    companion object {
+        private val DIFF = object : DiffUtil.ItemCallback<ChatMessage>() {
+            override fun areItemsTheSame(a: ChatMessage, b: ChatMessage) = a.timestamp == b.timestamp && a.role == b.role
+            override fun areContentsTheSame(a: ChatMessage, b: ChatMessage) = a == b
+        }
+        private const val VIEW_USER = 0
+        private const val VIEW_AI = 1
+        private val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
     }
 
-    override fun getItemViewType(position: Int) = if (getItem(position).isUser) 1 else 0
+    override fun getItemViewType(pos: Int) = if (getItem(pos).role == "user") VIEW_USER else VIEW_AI
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val layout = if (viewType == 1) R.layout.item_message_user else R.layout.item_message_javis
-        return VH(LayoutInflater.from(parent.context).inflate(layout, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, type: Int): ViewHolder {
+        val layout = if (type == VIEW_USER) R.layout.item_chat_user else R.layout.item_chat_ai
+        return ViewHolder(LayoutInflater.from(parent.context).inflate(layout, parent, false))
     }
 
-    override fun onBindViewHolder(holder: VH, position: Int) {
-        val msg = getItem(position)
-        holder.tvMessage.text = msg.text
-        holder.tvTime.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(msg.timestamp))
-    }
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(getItem(position))
 
-    class Diff : DiffUtil.ItemCallback<ChatMessage>() {
-        override fun areItemsTheSame(a: ChatMessage, b: ChatMessage) = a.id == b.id
-        override fun areContentsTheSame(a: ChatMessage, b: ChatMessage) = a == b
+    class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+        private val tvContent: TextView = v.findViewById(R.id.tv_content)
+        private val tvTime: TextView = v.findViewById(R.id.tv_time)
+        fun bind(msg: ChatMessage) {
+            tvContent.text = msg.content
+            tvTime.text = sdf.format(Date(msg.timestamp))
+        }
     }
 }

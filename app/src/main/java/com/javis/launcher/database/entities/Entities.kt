@@ -1,69 +1,28 @@
 package com.javis.launcher.database.entities
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "users")
-data class UserEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val name: String = "Sir",
-    val nickname: String = "",
-    val preferences: String = "{}",
-    val createdAt: Long = System.currentTimeMillis()
+@Entity(tableName = "memory_entries")
+data class MemoryEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val key: String,
+    val value: String,
+    val category: String,
+    val confidence: Float = 1.0f,
+    val timestamp: Long = System.currentTimeMillis(),
+    val lastAccessed: Long = System.currentTimeMillis()
 )
 
 @Entity(tableName = "conversations")
 data class ConversationEntity(
-    @PrimaryKey val id: String,
-    val userId: Long,
-    val title: String,
-    val context: String = "",
-    val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
-)
-
-@Entity(tableName = "messages",
-    foreignKeys = [ForeignKey(
-        entity = ConversationEntity::class,
-        parentColumns = ["id"],
-        childColumns = ["conversationId"],
-        onDelete = ForeignKey.CASCADE
-    )],
-    indices = [Index("conversationId")]
-)
-data class MessageEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val conversationId: String,
-    val role: String, // "user" | "assistant" | "system"
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val sessionId: String,
+    val role: String,
     val content: String,
+    val timestamp: Long = System.currentTimeMillis(),
     val provider: String = "",
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@Entity(tableName = "memory")
-data class MemoryEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val userId: Long,
-    val type: String, // "short_term" | "long_term" | "routine"
-    val key: String,
-    val value: String,
-    val importance: Int = 5,
-    val tags: List<String> = emptyList(),
-    val createdAt: Long = System.currentTimeMillis(),
-    val accessedAt: Long = System.currentTimeMillis()
-)
-
-@Entity(tableName = "tasks")
-data class TaskEntity(
-    @PrimaryKey val id: String,
-    val userId: Long,
-    val intent: String,
-    val plan: String, // JSON serialized TaskPlan
-    val status: String = "pending",
-    val createdAt: Long = System.currentTimeMillis(),
-    val completedAt: Long? = null
+    val model: String = ""
 )
 
 @Entity(tableName = "alarms")
@@ -72,50 +31,65 @@ data class AlarmEntity(
     val label: String,
     val hour: Int,
     val minute: Int,
-    val isRepeating: Boolean = false,
-    val repeatDays: String = "", // comma-separated day ints
     val isEnabled: Boolean = true,
+    val isRepeating: Boolean = false,
+    val repeatDays: String = "",
     val isWakeUp: Boolean = false,
+    val ringtoneUri: String = "",
+    val vibrate: Boolean = true,
     val createdAt: Long = System.currentTimeMillis()
-)
-
-@Entity(tableName = "command_history")
-data class CommandHistoryEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val userId: Long,
-    val command: String,
-    val result: String = "",
-    val success: Boolean = true,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@Entity(tableName = "notification_history")
-data class NotificationHistoryEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val packageName: String,
-    val appName: String,
-    val title: String,
-    val text: String,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@Entity(tableName = "logs")
-data class LogEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val userId: Long? = null,
-    val type: String,
-    val message: String,
-    val details: String = "",
-    val timestamp: Long = System.currentTimeMillis()
 )
 
 @Entity(tableName = "installed_apps")
 data class InstalledAppEntity(
     @PrimaryKey val packageName: String,
     val appName: String,
-    val isSystemApp: Boolean = false,
-    val category: String = "General",
-    val launchCount: Int = 0,
-    val lastLaunched: Long? = null,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val lastUsed: Long = 0L,
+    val useCount: Int = 0,
+    val category: String = "other"
+)
+
+@Entity(tableName = "command_log")
+data class CommandLogEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val command: String,
+    val intentType: String,
+    val result: String,
+    val success: Boolean,
+    val provider: String = "",
+    val latencyMs: Long = 0L,
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "notifications_cache")
+data class NotificationCacheEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val packageName: String,
+    val appName: String,
+    val title: String,
+    val content: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val isRead: Boolean = false
+)
+
+@Entity(tableName = "voice_profiles")
+data class VoiceProfileEntity(
+    @PrimaryKey val profileId: String,
+    val name: String,
+    val type: String,
+    val audioPath: String = "",
+    val isActive: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "tasks")
+data class TaskEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val title: String,
+    val description: String = "",
+    val dueTime: Long = 0L,
+    val isCompleted: Boolean = false,
+    val priority: Int = 0,
+    val createdAt: Long = System.currentTimeMillis()
 )
